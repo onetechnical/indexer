@@ -1470,9 +1470,11 @@ func (si *ServerImplementation) fetchBlock(ctx context.Context, round uint64, op
 
 		ret = generated.Block{
 			Bonus:                  uint64PtrOrNil(uint64(blockHeader.Bonus)),
+			CongestionTax:          uint64PtrOrNil(uint64(blockHeader.CongestionTax)),
 			FeesCollected:          uint64PtrOrNil(uint64(blockHeader.FeesCollected)),
 			GenesisHash:            blockHeader.GenesisHash[:],
 			GenesisId:              blockHeader.GenesisID,
+			Load:                   uint64PtrOrNil(uint64(blockHeader.Load)),
 			ParticipationUpdates:   partUpdates,
 			PreviousBlockHash512:   byteSliceOmitZeroPtr(blockHeader.Branch512[:]),
 			PreviousBlockHash:      blockHeader.Branch[:],

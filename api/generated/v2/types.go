@@ -505,6 +505,9 @@ type Block struct {
 	// Bonus the potential bonus payout for this block.
 	Bonus *uint64 `json:"bonus,omitempty"`
 
+	// CongestionTax the fee required, beyond the minimum fee, for "normal" transactions in this block.
+	CongestionTax *uint64 `json:"congestion-tax,omitempty"`
+
 	// FeesCollected the sum of all fees paid by transactions in this block.
 	FeesCollected *uint64 `json:"fees-collected,omitempty"`
 
@@ -513,6 +516,9 @@ type Block struct {
 
 	// GenesisId \[gen\] ID to which this block belongs.
 	GenesisId string `json:"genesis-id"`
+
+	// Load the degree to which this block is full, based on the number of bytes in the final block compared to the maximum allowed. Expressed as a fixed-point integer with 6 digits of precision, so 1,000,000 is a completely full block.
+	Load *uint64 `json:"load,omitempty"`
 
 	// ParticipationUpdates Participation account data that needs to be checked/acted on by the network.
 	ParticipationUpdates *ParticipationUpdates `json:"participation-updates,omitempty"`
@@ -1221,6 +1227,9 @@ type TransactionAssetTransfer struct {
 type TransactionHeartbeat struct {
 	// HbAddress \[hbad\] HbAddress is the account this txn is proving onlineness for.
 	HbAddress string `json:"hb-address"`
+
+	// HbChallengeDiscount \[hbc\] HbChallengeDiscount requests the challenge fee discount, reducing the required fee by one min fee. It is a request, not an assertion: it is granted only if HbAddress is actually under challenge.
+	HbChallengeDiscount *bool `json:"hb-challenge-discount,omitempty"`
 
 	// HbKeyDilution \[hbkd\] HbKeyDilution must match HbAddress account's current KeyDilution.
 	HbKeyDilution uint64 `json:"hb-key-dilution"`

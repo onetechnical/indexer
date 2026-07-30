@@ -368,9 +368,11 @@ func hdrRowToBlock(row idb.BlockRow) generated.Block {
 
 	ret := generated.Block{
 		Bonus:                  uint64PtrOrNil(uint64(row.BlockHeader.Bonus)),
+		CongestionTax:          uint64PtrOrNil(uint64(row.BlockHeader.CongestionTax)),
 		FeesCollected:          uint64PtrOrNil(uint64(row.BlockHeader.FeesCollected)),
 		GenesisHash:            row.BlockHeader.GenesisHash[:],
 		GenesisId:              row.BlockHeader.GenesisID,
+		Load:                   uint64PtrOrNil(uint64(row.BlockHeader.Load)),
 		ParticipationUpdates:   partUpdates,
 		PreviousBlockHash512:   byteSliceOmitZeroPtr(row.BlockHeader.Branch512[:]),
 		PreviousBlockHash:      row.BlockHeader.Branch[:],
@@ -697,8 +699,9 @@ func signedTxnWithAdToTransaction(stxn *sdk.SignedTxnWithAD, extra rowData) (gen
 	case sdk.HeartbeatTx:
 		hb := stxn.Txn.HeartbeatTxnFields
 		hbTxn := generated.TransactionHeartbeat{
-			HbAddress:     hb.HbAddress.String(),
-			HbKeyDilution: hb.HbKeyDilution,
+			HbAddress:           hb.HbAddress.String(),
+			HbChallengeDiscount: boolPtrOrNil(hb.HbChallengeDiscount),
+			HbKeyDilution:       hb.HbKeyDilution,
 			HbProof: generated.HbProofFields{
 				HbPk:     byteSliceOmitZeroPtr(hb.HbProof.PK[:]),
 				HbPk1sig: byteSliceOmitZeroPtr(hb.HbProof.PK1Sig[:]),
