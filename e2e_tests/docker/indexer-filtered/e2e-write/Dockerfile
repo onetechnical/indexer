@@ -27,6 +27,10 @@ ENV PATH="${HOME}/go/bin/:${PATH}"
 WORKDIR /opt/go
 RUN git clone --depth 1 -b master https://github.com/algorand/conduit
 WORKDIR /opt/go/conduit
+# See the note in e2e_tests/docker/indexer/Dockerfile: conduit must be built
+# against this checkout, since it is conduit that writes blocks and creates the
+# postgres schema here.
+RUN go mod edit -replace github.com/algorand/indexer/v3=/opt/go/indexer && go mod tidy
 RUN make
 WORKDIR /opt/go/indexer/e2e_tests
 
