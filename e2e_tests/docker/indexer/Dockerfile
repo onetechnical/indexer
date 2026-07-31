@@ -23,6 +23,12 @@ ENV PATH="${HOME}/go/bin/:${PATH}"
 WORKDIR /opt/go
 RUN git clone --depth 1 -b master https://github.com/algorand/conduit
 WORKDIR /opt/go/conduit
+# Conduit embeds indexer as a library, and it is conduit -- not the indexer
+# daemon -- that writes blocks and creates the postgres schema during these
+# tests. Without this replace, conduit would supply its own pinned indexer
+# release, so changes to the write path or the schema would go untested here
+# and could only be validated after landing and being pinned downstream.
+RUN go mod edit -replace github.com/algorand/indexer/v3=/opt/go/indexer && go mod tidy
 RUN make
 WORKDIR /opt/go/indexer/e2e_tests
 

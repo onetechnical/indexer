@@ -289,14 +289,15 @@
         "x-algorand-format": "Address"
       },
       "sig-type": {
-        "description": "SigType filters just results using the specified type of signature:\n* sig - Standard\n* msig - MultiSig\n* lsig - LogicSig",
+        "description": "SigType filters just results using the specified type of signature:\n* sig - Standard\n* msig - MultiSig\n* lsig - LogicSig\n* pqsig - Post-Quantum",
         "in": "query",
         "name": "sig-type",
         "schema": {
           "enum": [
             "sig",
             "msig",
-            "lsig"
+            "lsig",
+            "pqsig"
           ],
           "type": "string"
         }
@@ -886,11 +887,12 @@
             "type": "integer"
           },
           "sig-type": {
-            "description": "the type of signature used by this account, must be one of:\n* sig\n* msig\n* lsig\n* or null if unknown",
+            "description": "the type of signature used by this account, must be one of:\n* sig\n* msig\n* lsig\n* pqsig\n* or null if unknown",
             "enum": [
               "sig",
               "msig",
-              "lsig"
+              "lsig",
+              "pqsig"
             ],
             "type": "string"
           },
@@ -1310,6 +1312,10 @@
             "description": "the potential bonus payout for this block.",
             "type": "integer"
           },
+          "congestion-tax": {
+            "description": "the fee required, beyond the minimum fee, for \"normal\" transactions in this block.",
+            "type": "integer"
+          },
           "fees-collected": {
             "description": "the sum of all fees paid by transactions in this block.",
             "type": "integer"
@@ -1323,6 +1329,10 @@
           "genesis-id": {
             "description": "\\[gen\\] ID to which this block belongs.",
             "type": "string"
+          },
+          "load": {
+            "description": "the degree to which this block is full, based on the number of bytes in the final block compared to the maximum allowed. Expressed as a fixed-point integer with 6 digits of precision, so 1,000,000 is a completely full block.",
+            "type": "integer"
           },
           "participation-updates": {
             "$ref": "#/components/schemas/ParticipationUpdates"
@@ -2454,6 +2464,10 @@
           "hb-address": {
             "description": "\\[hbad\\] HbAddress is the account this txn is proving onlineness for.",
             "type": "string"
+          },
+          "hb-challenge-discount": {
+            "description": "\\[hbc\\] HbChallengeDiscount requests the challenge fee discount, reducing the required fee by one min fee. It is a request, not an assertion: it is granted only if HbAddress is actually under challenge.",
+            "type": "boolean"
           },
           "hb-key-dilution": {
             "description": "\\[hbkd\\] HbKeyDilution must match HbAddress account's current KeyDilution.",
@@ -3683,14 +3697,15 @@
             }
           },
           {
-            "description": "SigType filters just results using the specified type of signature:\n* sig - Standard\n* msig - MultiSig\n* lsig - LogicSig",
+            "description": "SigType filters just results using the specified type of signature:\n* sig - Standard\n* msig - MultiSig\n* lsig - LogicSig\n* pqsig - Post-Quantum",
             "in": "query",
             "name": "sig-type",
             "schema": {
               "enum": [
                 "sig",
                 "msig",
-                "lsig"
+                "lsig",
+                "pqsig"
               ],
               "type": "string"
             }
@@ -4883,14 +4898,15 @@
             }
           },
           {
-            "description": "SigType filters just results using the specified type of signature:\n* sig - Standard\n* msig - MultiSig\n* lsig - LogicSig",
+            "description": "SigType filters just results using the specified type of signature:\n* sig - Standard\n* msig - MultiSig\n* lsig - LogicSig\n* pqsig - Post-Quantum",
             "in": "query",
             "name": "sig-type",
             "schema": {
               "enum": [
                 "sig",
                 "msig",
-                "lsig"
+                "lsig",
+                "pqsig"
               ],
               "type": "string"
             }
@@ -5410,14 +5426,15 @@
             }
           },
           {
-            "description": "SigType filters just results using the specified type of signature:\n* sig - Standard\n* msig - MultiSig\n* lsig - LogicSig",
+            "description": "SigType filters just results using the specified type of signature:\n* sig - Standard\n* msig - MultiSig\n* lsig - LogicSig\n* pqsig - Post-Quantum",
             "in": "query",
             "name": "sig-type",
             "schema": {
               "enum": [
                 "sig",
                 "msig",
-                "lsig"
+                "lsig",
+                "pqsig"
               ],
               "type": "string"
             }

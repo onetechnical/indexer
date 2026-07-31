@@ -105,6 +105,36 @@ func TestSignatureType(t *testing.T) {
 			hasError: false,
 		},
 		{
+			name: "Post-quantum signature",
+			stxn: &sdk.SignedTxn{
+				PQsig: sdk.PQSig{
+					Scheme:    sdk.PQScheme{'f', '1'},
+					PublicKey: []byte{1, 2, 3},
+					Signature: []byte{4, 5, 6},
+				},
+			},
+			expected: idb.PQsig,
+			hasError: false,
+		},
+		{
+			// A logicsig delegated by a post-quantum account. LogicSig.Blank()
+			// ignores PQsig, so this case would otherwise fall through to the
+			// unsigned-transaction error.
+			name: "Logic sig with post-quantum signature",
+			stxn: &sdk.SignedTxn{
+				Lsig: sdk.LogicSig{
+					Logic: []byte{1, 2, 3},
+					PQsig: sdk.PQSig{
+						Scheme:    sdk.PQScheme{'f', '1'},
+						PublicKey: []byte{1, 2, 3},
+						Signature: []byte{4, 5, 6},
+					},
+				},
+			},
+			expected: idb.PQsig,
+			hasError: false,
+		},
+		{
 			name: "Unsigned transaction",
 			stxn: &sdk.SignedTxn{
 				// All signature fields are zero
@@ -130,7 +160,7 @@ func TestSignatureType(t *testing.T) {
 }
 
 func TestIsSigTypeValid(t *testing.T) {
-	validTypes := []idb.SigType{idb.Sig, idb.Msig, idb.Lsig}
+	validTypes := []idb.SigType{idb.Sig, idb.Msig, idb.Lsig, idb.PQsig}
 	for _, sigType := range validTypes {
 		t.Run(string(sigType), func(t *testing.T) {
 			assert.True(t, idb.IsSigTypeValid(sigType))

@@ -1190,12 +1190,13 @@
           "type": "string"
         },
         "sig-type": {
-          "description": "the type of signature used by this account, must be one of:\n* sig\n* msig\n* lsig\n* or null if unknown",
+          "description": "the type of signature used by this account, must be one of:\n* sig\n* msig\n* lsig\n* pqsig\n* or null if unknown",
           "type": "string",
           "enum": [
             "sig",
             "msig",
-            "lsig"
+            "lsig",
+            "pqsig"
           ]
         },
         "total-apps-opted-in": {
@@ -1669,6 +1670,14 @@
         },
         "proposer-payout": {
           "description": "the actual amount transferred to the proposer from the fee sink.",
+          "type": "integer"
+        },
+        "load": {
+          "description": "the degree to which this block is full, based on the number of bytes in the final block compared to the maximum allowed. Expressed as a fixed-point integer with 6 digits of precision, so 1,000,000 is a completely full block.",
+          "type": "integer"
+        },
+        "congestion-tax": {
+          "description": "the fee required, beyond the minimum fee, for \"normal\" transactions in this block.",
           "type": "integer"
         },
         "genesis-hash": {
@@ -2508,6 +2517,10 @@
           "description": "\\[hbkd\\] HbKeyDilution must match HbAddress account's current KeyDilution.",
           "type": "integer",
           "x-algorand-format": "uint64"
+        },
+        "hb-challenge-discount": {
+          "description": "\\[hbc\\] HbChallengeDiscount requests the challenge fee discount, reducing the required fee by one min fee. It is a request, not an assertion: it is granted only if HbAddress is actually under challenge.",
+          "type": "boolean"
         }
       }
     },
@@ -3151,10 +3164,11 @@
       "enum": [
         "sig",
         "msig",
-        "lsig"
+        "lsig",
+        "pqsig"
       ],
       "type": "string",
-      "description": "SigType filters just results using the specified type of signature:\n* sig - Standard\n* msig - MultiSig\n* lsig - LogicSig",
+      "description": "SigType filters just results using the specified type of signature:\n* sig - Standard\n* msig - MultiSig\n* lsig - LogicSig\n* pqsig - Post-Quantum",
       "name": "sig-type",
       "in": "query"
     },

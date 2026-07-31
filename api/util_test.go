@@ -835,3 +835,68 @@ func TestTxnAccessConversion(t *testing.T) {
 		assert.Equal(t, 0, len(*result.ApplicationTransaction.BoxReferences))
 	})
 }
+
+func TestBlockLoadAndCongestionTaxConversion(t *testing.T) {
+	t.Run("Set", func(t *testing.T) {
+		block := hdrRowToBlock(idb.BlockRow{
+			BlockHeader: sdk.BlockHeader{
+				Load:          500000,
+				CongestionTax: 1234,
+			},
+		})
+
+		require.NotNil(t, block.Load)
+		assert.Equal(t, uint64(500000), *block.Load)
+		require.NotNil(t, block.CongestionTax)
+		assert.Equal(t, uint64(1234), *block.CongestionTax)
+	})
+
+	// An uncongested block leaves both at zero, and they are omitted rather
+	// than reported as 0, keeping responses unchanged for such blocks.
+	t.Run("Zero", func(t *testing.T) {
+		block := hdrRowToBlock(idb.BlockRow{BlockHeader: sdk.BlockHeader{}})
+
+		assert.Nil(t, block.Load)
+		assert.Nil(t, block.CongestionTax)
+	})
+}
+
+func TestHeartbeatChallengeDiscountConversion(t *testing.T) {
+	extra := rowData{
+		Round:     1,
+		RoundTime: 1234567890,
+		Intra:     0,
+	}
+
+	heartbeatTxn := func(discount bool) *sdk.SignedTxnWithAD {
+		return &sdk.SignedTxnWithAD{
+			SignedTxn: sdk.SignedTxn{
+				Txn: sdk.Transaction{
+					Type: sdk.HeartbeatTx,
+					HeartbeatTxnFields: &sdk.HeartbeatTxnFields{
+						HbChallengeDiscount: discount,
+					},
+				},
+			},
+		}
+	}
+
+	t.Run("Requested", func(t *testing.T) {
+		result, err := signedTxnWithAdToTransaction(heartbeatTxn(true), extra)
+		require.NoError(t, err)
+
+		require.NotNil(t, result.HeartbeatTransaction)
+		require.NotNil(t, result.HeartbeatTransaction.HbChallengeDiscount)
+		assert.True(t, *result.HeartbeatTransaction.HbChallengeDiscount)
+	})
+
+	// The flag is a request, so the common case of not asking for the discount
+	// is reported by omitting it entirely.
+	t.Run("Not requested", func(t *testing.T) {
+		result, err := signedTxnWithAdToTransaction(heartbeatTxn(false), extra)
+		require.NoError(t, err)
+
+		require.NotNil(t, result.HeartbeatTransaction)
+		assert.Nil(t, result.HeartbeatTransaction.HbChallengeDiscount)
+	})
+}

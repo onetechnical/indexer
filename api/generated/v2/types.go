@@ -9,9 +9,10 @@ import (
 
 // Defines values for AccountSigType.
 const (
-	AccountSigTypeLsig AccountSigType = "lsig"
-	AccountSigTypeMsig AccountSigType = "msig"
-	AccountSigTypeSig  AccountSigType = "sig"
+	AccountSigTypeLsig  AccountSigType = "lsig"
+	AccountSigTypeMsig  AccountSigType = "msig"
+	AccountSigTypePqsig AccountSigType = "pqsig"
+	AccountSigTypeSig   AccountSigType = "sig"
 )
 
 // Defines values for Hashtype.
@@ -51,9 +52,10 @@ const (
 
 // Defines values for SigType.
 const (
-	SigTypeLsig SigType = "lsig"
-	SigTypeMsig SigType = "msig"
-	SigTypeSig  SigType = "sig"
+	SigTypeLsig  SigType = "lsig"
+	SigTypeMsig  SigType = "msig"
+	SigTypePqsig SigType = "pqsig"
+	SigTypeSig   SigType = "sig"
 )
 
 // Defines values for TxType.
@@ -102,9 +104,10 @@ const (
 
 // Defines values for LookupAccountTransactionsParamsSigType.
 const (
-	LookupAccountTransactionsParamsSigTypeLsig LookupAccountTransactionsParamsSigType = "lsig"
-	LookupAccountTransactionsParamsSigTypeMsig LookupAccountTransactionsParamsSigType = "msig"
-	LookupAccountTransactionsParamsSigTypeSig  LookupAccountTransactionsParamsSigType = "sig"
+	LookupAccountTransactionsParamsSigTypeLsig  LookupAccountTransactionsParamsSigType = "lsig"
+	LookupAccountTransactionsParamsSigTypeMsig  LookupAccountTransactionsParamsSigType = "msig"
+	LookupAccountTransactionsParamsSigTypePqsig LookupAccountTransactionsParamsSigType = "pqsig"
+	LookupAccountTransactionsParamsSigTypeSig   LookupAccountTransactionsParamsSigType = "sig"
 )
 
 // Defines values for SearchForApplicationBoxesParamsInclude.
@@ -126,9 +129,10 @@ const (
 
 // Defines values for LookupAssetTransactionsParamsSigType.
 const (
-	LookupAssetTransactionsParamsSigTypeLsig LookupAssetTransactionsParamsSigType = "lsig"
-	LookupAssetTransactionsParamsSigTypeMsig LookupAssetTransactionsParamsSigType = "msig"
-	LookupAssetTransactionsParamsSigTypeSig  LookupAssetTransactionsParamsSigType = "sig"
+	LookupAssetTransactionsParamsSigTypeLsig  LookupAssetTransactionsParamsSigType = "lsig"
+	LookupAssetTransactionsParamsSigTypeMsig  LookupAssetTransactionsParamsSigType = "msig"
+	LookupAssetTransactionsParamsSigTypePqsig LookupAssetTransactionsParamsSigType = "pqsig"
+	LookupAssetTransactionsParamsSigTypeSig   LookupAssetTransactionsParamsSigType = "sig"
 )
 
 // Defines values for LookupAssetTransactionsParamsAddressRole.
@@ -152,9 +156,10 @@ const (
 
 // Defines values for SearchForTransactionsParamsSigType.
 const (
-	Lsig SearchForTransactionsParamsSigType = "lsig"
-	Msig SearchForTransactionsParamsSigType = "msig"
-	Sig  SearchForTransactionsParamsSigType = "sig"
+	Lsig  SearchForTransactionsParamsSigType = "lsig"
+	Msig  SearchForTransactionsParamsSigType = "msig"
+	Pqsig SearchForTransactionsParamsSigType = "pqsig"
+	Sig   SearchForTransactionsParamsSigType = "sig"
 )
 
 // Defines values for SearchForTransactionsParamsAddressRole.
@@ -249,6 +254,7 @@ type Account struct {
 	// * sig
 	// * msig
 	// * lsig
+	// * pqsig
 	// * or null if unknown
 	SigType *AccountSigType `json:"sig-type,omitempty"`
 
@@ -281,6 +287,7 @@ type Account struct {
 // * sig
 // * msig
 // * lsig
+// * pqsig
 // * or null if unknown
 type AccountSigType string
 
@@ -505,6 +512,9 @@ type Block struct {
 	// Bonus the potential bonus payout for this block.
 	Bonus *uint64 `json:"bonus,omitempty"`
 
+	// CongestionTax the fee required, beyond the minimum fee, for "normal" transactions in this block.
+	CongestionTax *uint64 `json:"congestion-tax,omitempty"`
+
 	// FeesCollected the sum of all fees paid by transactions in this block.
 	FeesCollected *uint64 `json:"fees-collected,omitempty"`
 
@@ -513,6 +523,9 @@ type Block struct {
 
 	// GenesisId \[gen\] ID to which this block belongs.
 	GenesisId string `json:"genesis-id"`
+
+	// Load the degree to which this block is full, based on the number of bytes in the final block compared to the maximum allowed. Expressed as a fixed-point integer with 6 digits of precision, so 1,000,000 is a completely full block.
+	Load *uint64 `json:"load,omitempty"`
 
 	// ParticipationUpdates Participation account data that needs to be checked/acted on by the network.
 	ParticipationUpdates *ParticipationUpdates `json:"participation-updates,omitempty"`
@@ -1222,6 +1235,9 @@ type TransactionHeartbeat struct {
 	// HbAddress \[hbad\] HbAddress is the account this txn is proving onlineness for.
 	HbAddress string `json:"hb-address"`
 
+	// HbChallengeDiscount \[hbc\] HbChallengeDiscount requests the challenge fee discount, reducing the required fee by one min fee. It is a request, not an assertion: it is granted only if HbAddress is actually under challenge.
+	HbChallengeDiscount *bool `json:"hb-challenge-discount,omitempty"`
+
 	// HbKeyDilution \[hbkd\] HbKeyDilution must match HbAddress account's current KeyDilution.
 	HbKeyDilution uint64 `json:"hb-key-dilution"`
 
@@ -1766,6 +1782,7 @@ type LookupAccountTransactionsParams struct {
 	// * sig - Standard
 	// * msig - MultiSig
 	// * lsig - LogicSig
+	// * pqsig - Post-Quantum
 	SigType *LookupAccountTransactionsParamsSigType `form:"sig-type,omitempty" json:"sig-type,omitempty"`
 
 	// Txid Lookup the specific transaction by ID.
@@ -1935,6 +1952,7 @@ type LookupAssetTransactionsParams struct {
 	// * sig - Standard
 	// * msig - MultiSig
 	// * lsig - LogicSig
+	// * pqsig - Post-Quantum
 	SigType *LookupAssetTransactionsParamsSigType `form:"sig-type,omitempty" json:"sig-type,omitempty"`
 
 	// Txid Lookup the specific transaction by ID.
@@ -2035,6 +2053,7 @@ type SearchForTransactionsParams struct {
 	// * sig - Standard
 	// * msig - MultiSig
 	// * lsig - LogicSig
+	// * pqsig - Post-Quantum
 	SigType *SearchForTransactionsParamsSigType `form:"sig-type,omitempty" json:"sig-type,omitempty"`
 
 	// GroupId Lookup transactions by group ID. This field must be base64-encoded, and afterwards, base64 characters that are URL-unsafe (i.e. =, /, +) must be URL-encoded
