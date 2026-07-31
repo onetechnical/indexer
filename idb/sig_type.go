@@ -12,15 +12,17 @@ type SigType string
 
 // Possible signature types.
 const (
-	Sig  SigType = "sig"
-	Msig SigType = "msig"
-	Lsig SigType = "lsig"
+	Sig   SigType = "sig"
+	Msig  SigType = "msig"
+	Lsig  SigType = "lsig"
+	PQsig SigType = "pqsig"
 )
 
 var sigTypeEnumMap = map[SigType]struct{}{
-	Sig:  {},
-	Msig: {},
-	Lsig: {},
+	Sig:   {},
+	Msig:  {},
+	Lsig:  {},
+	PQsig: {},
 }
 
 func makeSigTypeEnumString() string {
@@ -50,7 +52,13 @@ func SignatureType(stxn *sdk.SignedTxn) (SigType, error) {
 	if !stxn.Msig.Blank() {
 		return Msig, nil
 	}
-	if !stxn.Lsig.Blank() {
+	if !stxn.PQsig.Blank() {
+		return PQsig, nil
+	}
+	// LogicSig.Blank() does not consider PQsig in the current version (it will
+	// eventually, of course), but for now we need the extra explicit
+	// check. Remove it when sdk updates.
+	if !stxn.Lsig.Blank() || !stxn.Lsig.PQsig.Blank() {
 		if stxn.Lsig.Sig != blankSignature {
 			return Sig, nil
 		}
@@ -59,6 +67,9 @@ func SignatureType(stxn *sdk.SignedTxn) (SigType, error) {
 		}
 		if !stxn.Lsig.LMsig.Blank() {
 			return Msig, nil
+		}
+		if !stxn.Lsig.PQsig.Blank() {
+			return PQsig, nil
 		}
 		return Lsig, nil
 	}

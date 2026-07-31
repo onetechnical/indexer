@@ -289,14 +289,15 @@
         "x-algorand-format": "Address"
       },
       "sig-type": {
-        "description": "SigType filters just results using the specified type of signature:\n* sig - Standard\n* msig - MultiSig\n* lsig - LogicSig",
+        "description": "SigType filters just results using the specified type of signature:\n* sig - Standard\n* msig - MultiSig\n* lsig - LogicSig\n* pqsig - Post-Quantum",
         "in": "query",
         "name": "sig-type",
         "schema": {
           "enum": [
             "sig",
             "msig",
-            "lsig"
+            "lsig",
+            "pqsig"
           ],
           "type": "string"
         }
@@ -886,11 +887,12 @@
             "type": "integer"
           },
           "sig-type": {
-            "description": "the type of signature used by this account, must be one of:\n* sig\n* msig\n* lsig\n* or null if unknown",
+            "description": "the type of signature used by this account, must be one of:\n* sig\n* msig\n* lsig\n* pqsig\n* or null if unknown",
             "enum": [
               "sig",
               "msig",
-              "lsig"
+              "lsig",
+              "pqsig"
             ],
             "type": "string"
           },
@@ -3695,14 +3697,15 @@
             }
           },
           {
-            "description": "SigType filters just results using the specified type of signature:\n* sig - Standard\n* msig - MultiSig\n* lsig - LogicSig",
+            "description": "SigType filters just results using the specified type of signature:\n* sig - Standard\n* msig - MultiSig\n* lsig - LogicSig\n* pqsig - Post-Quantum",
             "in": "query",
             "name": "sig-type",
             "schema": {
               "enum": [
                 "sig",
                 "msig",
-                "lsig"
+                "lsig",
+                "pqsig"
               ],
               "type": "string"
             }
@@ -4895,14 +4898,15 @@
             }
           },
           {
-            "description": "SigType filters just results using the specified type of signature:\n* sig - Standard\n* msig - MultiSig\n* lsig - LogicSig",
+            "description": "SigType filters just results using the specified type of signature:\n* sig - Standard\n* msig - MultiSig\n* lsig - LogicSig\n* pqsig - Post-Quantum",
             "in": "query",
             "name": "sig-type",
             "schema": {
               "enum": [
                 "sig",
                 "msig",
-                "lsig"
+                "lsig",
+                "pqsig"
               ],
               "type": "string"
             }
@@ -5422,14 +5426,15 @@
             }
           },
           {
-            "description": "SigType filters just results using the specified type of signature:\n* sig - Standard\n* msig - MultiSig\n* lsig - LogicSig",
+            "description": "SigType filters just results using the specified type of signature:\n* sig - Standard\n* msig - MultiSig\n* lsig - LogicSig\n* pqsig - Post-Quantum",
             "in": "query",
             "name": "sig-type",
             "schema": {
               "enum": [
                 "sig",
                 "msig",
-                "lsig"
+                "lsig",
+                "pqsig"
               ],
               "type": "string"
             }

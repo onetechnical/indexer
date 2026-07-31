@@ -9,9 +9,10 @@ import (
 
 // Defines values for AccountSigType.
 const (
-	AccountSigTypeLsig AccountSigType = "lsig"
-	AccountSigTypeMsig AccountSigType = "msig"
-	AccountSigTypeSig  AccountSigType = "sig"
+	AccountSigTypeLsig  AccountSigType = "lsig"
+	AccountSigTypeMsig  AccountSigType = "msig"
+	AccountSigTypePqsig AccountSigType = "pqsig"
+	AccountSigTypeSig   AccountSigType = "sig"
 )
 
 // Defines values for Hashtype.
@@ -51,9 +52,10 @@ const (
 
 // Defines values for SigType.
 const (
-	SigTypeLsig SigType = "lsig"
-	SigTypeMsig SigType = "msig"
-	SigTypeSig  SigType = "sig"
+	SigTypeLsig  SigType = "lsig"
+	SigTypeMsig  SigType = "msig"
+	SigTypePqsig SigType = "pqsig"
+	SigTypeSig   SigType = "sig"
 )
 
 // Defines values for TxType.
@@ -153,6 +155,7 @@ type Account struct {
 	// * sig
 	// * msig
 	// * lsig
+	// * pqsig
 	// * or null if unknown
 	SigType *AccountSigType `json:"sig-type,omitempty"`
 
@@ -185,6 +188,7 @@ type Account struct {
 // * sig
 // * msig
 // * lsig
+// * pqsig
 // * or null if unknown
 type AccountSigType string
 
