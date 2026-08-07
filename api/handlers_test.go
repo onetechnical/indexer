@@ -5,10 +5,10 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"math"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -384,7 +384,7 @@ func TestValidateTransactionFilter(t *testing.T) {
 }
 
 func loadResourceFileOrPanic(path string) []byte {
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		panic(fmt.Sprintf("Failed to load resource file: '%s'", path))
 	}

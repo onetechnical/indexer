@@ -2630,7 +2630,8 @@
       "mutually-exclusive": [
         "sig",
         "multisig",
-        "logicsig"
+        "logicsig",
+        "pqsig"
       ],
       "properties": {
         "logicsig": {
@@ -2638,6 +2639,9 @@
         },
         "multisig": {
           "$ref": "#/definitions/TransactionSignatureMultisig"
+        },
+        "pqsig": {
+          "$ref": "#/definitions/TransactionSignaturePQsig"
         },
         "sig": {
           "description": "\\[sig\\] Standard ed25519 signature.",
@@ -2671,6 +2675,9 @@
         },
         "logic-multisig-signature": {
           "$ref": "#/definitions/TransactionSignatureMultisig"
+        },
+        "pqsig": {
+          "$ref": "#/definitions/TransactionSignaturePQsig"
         },
         "signature": {
           "description": "\\[sig\\] ed25519 signature.",
@@ -2710,6 +2717,35 @@
         },
         "signature": {
           "description": "\\[s\\]",
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "TransactionSignaturePQsig": {
+      "description": "structure holding a post-quantum signature.\n\nDefinition:\ndata/transactions/pqsig.go : PQSig",
+      "type": "object",
+      "required": [
+        "scheme",
+        "public-key",
+        "signature"
+      ],
+      "properties": {
+        "scheme": {
+          "description": "\\[sch\\] identifies the internal signature scheme.",
+          "type": "string"
+        },
+        "salt": {
+          "description": "\\[slt\\] a single byte, added to ensure the hashed address is not an Ed25519 curve point",
+          "type": "integer"
+        },
+        "public-key": {
+          "description": "\\[pk\\]",
+          "type": "string",
+          "format": "byte"
+        },
+        "signature": {
+          "description": "\\[sig\\]",
           "type": "string",
           "format": "byte"
         }

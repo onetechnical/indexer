@@ -3,7 +3,7 @@ package core
 import (
 	"encoding/base64"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -337,7 +337,7 @@ func getData(url, token string) ([]byte, error) {
 		}
 	}()
 
-	data, ioErr := ioutil.ReadAll(resp.Body)
+	data, ioErr := io.ReadAll(resp.Body)
 
 	if resp.StatusCode != http.StatusOK {
 		// We attempted to read the body even though the status was bad.

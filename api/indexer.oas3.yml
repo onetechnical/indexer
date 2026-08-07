@@ -2574,6 +2574,9 @@
           "multisig": {
             "$ref": "#/components/schemas/TransactionSignatureMultisig"
           },
+          "pqsig": {
+            "$ref": "#/components/schemas/TransactionSignaturePQsig"
+          },
           "sig": {
             "description": "\\[sig\\] Standard ed25519 signature.",
             "format": "byte",
@@ -2604,6 +2607,9 @@
           },
           "multisig-signature": {
             "$ref": "#/components/schemas/TransactionSignatureMultisig"
+          },
+          "pqsig": {
+            "$ref": "#/components/schemas/TransactionSignaturePQsig"
           },
           "signature": {
             "description": "\\[sig\\] ed25519 signature.",
@@ -2653,6 +2659,37 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "TransactionSignaturePQsig": {
+        "description": "structure holding a post-quantum signature.\n\nDefinition:\ntransactions/pqsig.go : PQSig",
+        "properties": {
+          "public-key": {
+            "description": "\\[pk\\]",
+            "format": "byte",
+            "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$",
+            "type": "string"
+          },
+          "salt": {
+            "description": "\\[slt\\] a single byte, added to ensure the hashed address is not an Ed25519 curve point",
+            "type": "integer"
+          },
+          "scheme": {
+            "description": "\\[sch\\] identifies the internal signature scheme.",
+            "type": "string"
+          },
+          "signature": {
+            "description": "\\[sig\\]",
+            "format": "byte",
+            "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "public-key",
+          "scheme",
+          "signature"
+        ],
         "type": "object"
       },
       "TransactionStateProof": {

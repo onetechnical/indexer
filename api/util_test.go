@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/algorand/indexer/v3/api/generated/v2"
 	"github.com/algorand/indexer/v3/idb"
 
 	sdk "github.com/algorand/go-algorand-sdk/v2/types"
@@ -59,6 +60,95 @@ func TestInvalidTxnRow(t *testing.T) {
 	require.ErrorContains(t, err, "Txn and RootTxn should be mutually exclusive")
 }
 
+// TestPQsigConversion checks that a post-quantum signature is reported in both
+// of the places it can appear: directly on the SignedTxn, and inside a
+// delegated LogicSig.
+func TestPQsigConversion(t *testing.T) {
+	makePQSig := func(scheme string, salt byte) sdk.PQSig {
+		var s sdk.PQScheme
+		copy(s[:], scheme)
+		return sdk.PQSig{
+			Scheme:    s,
+			Salt:      sdk.PQAddressSalt(salt),
+			PublicKey: []byte{0x01, 0x02, 0x03},
+			Signature: []byte{0x04, 0x05, 0x06},
+		}
+	}
+
+	// Wrap a SignedTxn in the minimum TxnRow that txnRowToTransaction accepts.
+	// Only txnRowToTransaction fills in Transaction.Signature, so the more
+	// commonly used signedTxnWithAdToTransaction will not do here.
+	convert := func(t *testing.T, stxn sdk.SignedTxn) generated.TransactionSignature {
+		stxn.Txn.Type = sdk.PaymentTx
+		row := idb.TxnRow{
+			Round:     1,
+			RoundTime: time.Unix(1234567890, 0),
+			Txn:       &sdk.SignedTxnWithAD{SignedTxn: stxn},
+		}
+		txn, err := txnRowToTransaction(row)
+		require.NoError(t, err)
+		require.NotNil(t, txn.Signature)
+		return *txn.Signature
+	}
+
+	t.Run("on the SignedTxn", func(t *testing.T) {
+		sig := convert(t, sdk.SignedTxn{PQsig: makePQSig("F1", 7)})
+
+		require.NotNil(t, sig.Pqsig)
+		assert.Equal(t, "F1", sig.Pqsig.Scheme)
+		require.NotNil(t, sig.Pqsig.Salt)
+		assert.Equal(t, uint64(7), *sig.Pqsig.Salt)
+		assert.Equal(t, []byte{0x01, 0x02, 0x03}, sig.Pqsig.PublicKey)
+		assert.Equal(t, []byte{0x04, 0x05, 0x06}, sig.Pqsig.Signature)
+
+		assert.Nil(t, sig.Logicsig)
+	})
+
+	t.Run("delegated to a LogicSig", func(t *testing.T) {
+		sig := convert(t, sdk.SignedTxn{
+			Lsig: sdk.LogicSig{
+				Logic: []byte{0x01, 0x20, 0x01, 0x01, 0x22},
+				PQsig: makePQSig("F1", 7),
+			},
+		})
+
+		require.NotNil(t, sig.Logicsig)
+		require.NotNil(t, sig.Logicsig.Pqsig)
+		assert.Equal(t, "F1", sig.Logicsig.Pqsig.Scheme)
+
+		// The delegating signature belongs to the lsig, not the txn.
+		assert.Nil(t, sig.Pqsig)
+	})
+
+	// LogicSig.Blank() does not yet consider PQsig, so a LogicSig carrying
+	// nothing but a PQsig would otherwise be dropped entirely.
+	t.Run("LogicSig holding only a PQsig", func(t *testing.T) {
+		sig := convert(t, sdk.SignedTxn{
+			Lsig: sdk.LogicSig{PQsig: makePQSig("F1", 7)},
+		})
+
+		require.NotNil(t, sig.Logicsig)
+		require.NotNil(t, sig.Logicsig.Pqsig)
+		assert.Equal(t, "F1", sig.Logicsig.Pqsig.Scheme)
+	})
+
+	// Salt goes through uint64PtrOrNil, so a zero salt is omitted rather than
+	// reported as 0. Clients must treat an absent salt as 0.
+	t.Run("zero salt is omitted", func(t *testing.T) {
+		sig := convert(t, sdk.SignedTxn{PQsig: makePQSig("F1", 0)})
+
+		require.NotNil(t, sig.Pqsig)
+		assert.Nil(t, sig.Pqsig.Salt)
+	})
+
+	t.Run("absent when unsigned by a PQsig", func(t *testing.T) {
+		sig := convert(t, sdk.SignedTxn{Sig: sdk.Signature{0x01}})
+
+		assert.Nil(t, sig.Pqsig)
+		assert.Nil(t, sig.Logicsig)
+	})
+}
+
 // TestTxnAccessConversion tests the conversion of txn.Access field combinations
 // from SDK types to the generated API types, exercising all the logic in
 // converter_utils.go lines 504-588
@@ -66,7 +156,7 @@ func TestTxnAccessConversion(t *testing.T) {
 	// Helper to create a valid non-zero address
 	makeAddress := func(seed byte) sdk.Address {
 		var addrBytes [32]byte
-		for i := 0; i < 32; i++ {
+		for i := range addrBytes {
 			addrBytes[i] = seed + byte(i)
 		}
 		return sdk.Address(addrBytes)

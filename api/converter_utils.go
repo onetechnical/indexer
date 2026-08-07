@@ -175,7 +175,10 @@ func msigToTransactionMsig(msig sdk.MultisigSig) *generated.TransactionSignature
 }
 
 func lsigToTransactionLsig(lsig sdk.LogicSig) *generated.TransactionSignatureLogicsig {
-	if lsig.Blank() {
+	// LogicSig.Blank() does not consider PQsig in the current version (it will
+	// eventually, of course), but for now we need the extra explicit
+	// check. Remove it when sdk updates.
+	if lsig.Blank() && lsig.PQsig.Blank() {
 		return nil
 	}
 
@@ -189,9 +192,24 @@ func lsigToTransactionLsig(lsig sdk.LogicSig) *generated.TransactionSignatureLog
 		Logic:                  lsig.Logic,
 		LogicMultisigSignature: msigToTransactionMsig(lsig.LMsig),
 		MultisigSignature:      msigToTransactionMsig(lsig.Msig),
+		Pqsig:                  pqsigToTransactionPQsig(lsig.PQsig),
 		Signature:              sigToTransactionSig(lsig.Sig),
 	}
 
+	return &ret
+}
+
+func pqsigToTransactionPQsig(pqsig sdk.PQSig) *generated.TransactionSignaturePQsig {
+	if pqsig.Blank() {
+		return nil
+	}
+
+	ret := generated.TransactionSignaturePQsig{
+		Scheme:    string(pqsig.Scheme[:]),
+		Salt:      uint64PtrOrNil(uint64(pqsig.Salt)),
+		PublicKey: pqsig.PublicKey,
+		Signature: pqsig.Signature,
+	}
 	return &ret
 }
 
@@ -288,6 +306,7 @@ func txnRowToTransaction(row idb.TxnRow) (generated.Transaction, error) {
 		Logicsig: lsigToTransactionLsig(stxn.Lsig),
 		Multisig: msigToTransactionMsig(stxn.Msig),
 		Sig:      sigToTransactionSig(stxn.Sig),
+		Pqsig:    pqsigToTransactionPQsig(stxn.PQsig),
 	}
 
 	var txid string
