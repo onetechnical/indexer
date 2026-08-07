@@ -18,7 +18,6 @@ const (
 	errBadGroupIDLen                   = "bad length for group ID"
 	errUnableToParseDigest             = "unable to parse base32 digest data"
 	errUnableToParseNext               = "unable to parse next token"
-	errUnableToDecodeTransaction       = "unable to decode transaction bytes"
 	errFailedSearchingAccount          = "failed while searching for account"
 	errFailedSearchingAsset            = "failed while searching for asset"
 	errFailedSearchingAssetBalances    = "failed while searching for asset balances"

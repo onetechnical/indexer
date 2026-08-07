@@ -6,7 +6,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -480,12 +480,10 @@ func TestAccountMaxResultsLimit(t *testing.T) {
 	//////////
 
 	maxResults := 14
-	serverCtx, serverCancel := context.WithCancel(context.Background())
-	defer serverCancel()
 	opts := defaultOpts
 	opts.MaxAPIResourcesPerAccount = uint64(maxResults)
 	listenAddr := "localhost:8989"
-	go Serve(serverCtx, listenAddr, db, nil, logrus.New(), opts)
+	go Serve(t.Context(), listenAddr, db, nil, logrus.New(), opts)
 
 	waitForServer(t, listenAddr)
 
@@ -511,7 +509,7 @@ func TestAccountMaxResultsLimit(t *testing.T) {
 		resp, err := http.Get("http://" + listenAddr + path)
 		require.NoError(t, err)
 		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		require.NoError(t, err)
 		return resp, body
 	}
@@ -1028,37 +1026,10 @@ func TestKeyregTransactionWithStateProofKeys(t *testing.T) {
 	///////////
 	// Given // A block containing a key reg txn with state proof key
 	///////////
-	var votePK [32]byte
-	votePK[0] = 1
 
-	var selectionPK [32]byte
-	selectionPK[0] = 1
-
+	// The state proof key the keyreg txn in the fixture block registers.
 	var stateProofPK [64]byte
 	stateProofPK[0] = 1
-
-	//txn := transactions.SignedTxnWithAD{
-	//	SignedTxn: transactions.SignedTxn{
-	//		Txn: transactions.Transaction{
-	//			Type: "keyreg",
-	//			Header: transactions.Header{
-	//				Sender:      test.AccountA,
-	//				GenesisHash: test.GenesisHash,
-	//			},
-	//			KeyregTxnFields: transactions.KeyregTxnFields{
-	//				VotePK:           votePK,
-	//				SelectionPK:      selectionPK,
-	//				StateProofPK:     stateProofPK,
-	//				VoteFirst:        basics.Round(0),
-	//				VoteLast:         basics.Round(100),
-	//				VoteKeyDilution:  1000,
-	//				Nonparticipation: false,
-	//			},
-	//		},
-	//		Sig: test.Signature,
-	//	},
-	//}
-	//
 
 	vb, err := test.ReadValidatedBlockFromFile("test_resources/validated_blocks/KeyregTransactionWithStateProofKeys.vb")
 	require.NoError(t, err)
@@ -1315,9 +1286,6 @@ func TestAccountClearsNonUTF8(t *testing.T) {
 // TestLookupInnerLogs runs queries for logs given application ids,
 // and checks that logs in inner transactions match properly.
 func TestLookupInnerLogs(t *testing.T) {
-	var appAddr sdk.Address
-	appAddr[1] = 99
-
 	params := generated.LookupApplicationLogsByIDParams{}
 
 	testcases := []struct {
@@ -1407,9 +1375,6 @@ func TestLookupInnerLogs(t *testing.T) {
 // TestLookupInnerLogs runs queries for logs given application ids,
 // and checks that logs in inner transactions match properly.
 func TestLookupMultiInnerLogs(t *testing.T) {
-	var appAddr sdk.Address
-	appAddr[1] = 99
-
 	params := generated.LookupApplicationLogsByIDParams{}
 
 	testcases := []struct {
@@ -1663,12 +1628,10 @@ func TestGetBlocksTransactionsLimit(t *testing.T) {
 	//////////
 
 	maxTxns := 10
-	serverCtx, serverCancel := context.WithCancel(context.Background())
-	defer serverCancel()
 	opts := defaultOpts
 	opts.MaxTransactionsLimit = uint64(maxTxns)
 	listenAddr := "localhost:8888"
-	go Serve(serverCtx, listenAddr, db, nil, logrus.New(), opts)
+	go Serve(t.Context(), listenAddr, db, nil, logrus.New(), opts)
 
 	waitForServer(t, listenAddr)
 
@@ -1682,7 +1645,7 @@ func TestGetBlocksTransactionsLimit(t *testing.T) {
 		resp, err := http.Get("http://" + listenAddr + path)
 		require.NoError(t, err)
 		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		require.NoError(t, err)
 		return resp, body
 	}
@@ -1753,11 +1716,9 @@ func TestGetBlockWithCompression(t *testing.T) {
 	// When // We look up a block using a ServerImplementation with a compression flag on/off
 	//////////
 
-	serverCtx, serverCancel := context.WithCancel(context.Background())
-	defer serverCancel()
 	opts := defaultOpts
 	listenAddr := "localhost:8889"
-	go Serve(serverCtx, listenAddr, db, nil, logrus.New(), opts)
+	go Serve(t.Context(), listenAddr, db, nil, logrus.New(), opts)
 
 	waitForServer(t, listenAddr)
 
@@ -1780,7 +1741,7 @@ func TestGetBlockWithCompression(t *testing.T) {
 		require.NoError(t, err)
 
 		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		require.NoError(t, err)
 		require.Equal(t, http.StatusOK, resp.StatusCode, fmt.Sprintf("unexpected return code, body: %s", string(body)))
 
@@ -1790,7 +1751,7 @@ func TestGetBlockWithCompression(t *testing.T) {
 			reader, err := gzip.NewReader(bytes.NewReader(body))
 			require.NoError(t, err)
 
-			output, e2 := ioutil.ReadAll(reader)
+			output, e2 := io.ReadAll(reader)
 			require.NoError(t, e2)
 
 			body = output
@@ -1824,11 +1785,9 @@ func TestNoCompressionSupportForNonBlockAPI(t *testing.T) {
 	// When // we call the health endpoint using compression flag on
 	//////////
 
-	serverCtx, serverCancel := context.WithCancel(context.Background())
-	defer serverCancel()
 	opts := defaultOpts
 	listenAddr := "localhost:8887"
-	go Serve(serverCtx, listenAddr, db, nil, logrus.New(), opts)
+	go Serve(t.Context(), listenAddr, db, nil, logrus.New(), opts)
 
 	waitForServer(t, listenAddr)
 
@@ -1849,7 +1808,7 @@ func TestNoCompressionSupportForNonBlockAPI(t *testing.T) {
 
 	require.Equal(t, resp.Header.Get(echo.HeaderContentEncoding), "")
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, resp.StatusCode, fmt.Sprintf("unexpected return code, body: %s", string(body)))
 	var response generated.HealthCheckResponse
@@ -2265,7 +2224,7 @@ func makeRequest(t *testing.T, listenAddr string, path string, includeDeleted bo
 	resp, err := http.Get(req)
 	require.NoError(t, err)
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	require.NoError(t, err)
 	return resp, body
 }
@@ -2274,11 +2233,9 @@ func makeRequest(t *testing.T, listenAddr string, path string, includeDeleted bo
 func TestAppDelete(t *testing.T) {
 	db, shutdownFunc := setupIdb(t, test.MakeGenesis())
 	defer shutdownFunc()
-	serverCtx, serverCancel := context.WithCancel(context.Background())
-	defer serverCancel()
 	opts := defaultOpts
 	listenAddr := "localhost:8890"
-	go Serve(serverCtx, listenAddr, db, nil, logrus.New(), opts)
+	go Serve(t.Context(), listenAddr, db, nil, logrus.New(), opts)
 
 	waitForServer(t, listenAddr)
 
@@ -2376,11 +2333,9 @@ func TestAppDelete(t *testing.T) {
 func TestAssetDelete(t *testing.T) {
 	db, shutdownFunc := setupIdb(t, test.MakeGenesis())
 	defer shutdownFunc()
-	serverCtx, serverCancel := context.WithCancel(context.Background())
-	defer serverCancel()
 	opts := defaultOpts
 	listenAddr := "localhost:8891"
-	go Serve(serverCtx, listenAddr, db, nil, logrus.New(), opts)
+	go Serve(t.Context(), listenAddr, db, nil, logrus.New(), opts)
 
 	waitForServer(t, listenAddr)
 	///////////
@@ -2478,11 +2433,9 @@ func TestAssetDelete(t *testing.T) {
 func TestApplicationLocal(t *testing.T) {
 	db, shutdownFunc := setupIdb(t, test.MakeGenesis())
 	defer shutdownFunc()
-	serverCtx, serverCancel := context.WithCancel(context.Background())
-	defer serverCancel()
 	opts := defaultOpts
 	listenAddr := "localhost:8892"
-	go Serve(serverCtx, listenAddr, db, nil, logrus.New(), opts)
+	go Serve(t.Context(), listenAddr, db, nil, logrus.New(), opts)
 
 	waitForServer(t, listenAddr)
 
@@ -2581,11 +2534,9 @@ func TestApplicationLocal(t *testing.T) {
 func TestAccounts(t *testing.T) {
 	db, shutdownFunc := setupIdb(t, test.MakeGenesis())
 	defer shutdownFunc()
-	serverCtx, serverCancel := context.WithCancel(context.Background())
-	defer serverCancel()
 	opts := defaultOpts
 	listenAddr := "localhost:8893"
-	go Serve(serverCtx, listenAddr, db, nil, logrus.New(), opts)
+	go Serve(t.Context(), listenAddr, db, nil, logrus.New(), opts)
 
 	waitForServer(t, listenAddr)
 
@@ -2725,12 +2676,10 @@ func TestPNAHeader(t *testing.T) {
 	// When // We preflight an endpoint with the PNA "Request" header set
 	//////////
 
-	serverCtx, serverCancel := context.WithCancel(context.Background())
-	defer serverCancel()
 	opts := defaultOpts
 	opts.EnablePrivateNetworkAccessHeader = true
 	listenAddr := "localhost:8894"
-	go Serve(serverCtx, listenAddr, db, nil, logrus.New(), opts)
+	go Serve(t.Context(), listenAddr, db, nil, logrus.New(), opts)
 
 	waitForServer(t, listenAddr)
 

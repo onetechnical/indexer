@@ -1211,6 +1211,12 @@ type TransactionSignature struct {
 	// crypto/multisig.go : MultisigSig
 	Multisig *TransactionSignatureMultisig `json:"multisig,omitempty"`
 
+	// Pqsig structure holding a post-quantum signature.
+	//
+	// Definition:
+	// transactions/pqsig.go : PQSig
+	Pqsig *TransactionSignaturePQsig `json:"pqsig,omitempty"`
+
 	// Sig \[sig\] Standard ed25519 signature.
 	Sig *[]byte `json:"sig,omitempty"`
 }
@@ -1238,6 +1244,12 @@ type TransactionSignatureLogicsig struct {
 	// crypto/multisig.go : MultisigSig
 	MultisigSignature *TransactionSignatureMultisig `json:"multisig-signature,omitempty"`
 
+	// Pqsig structure holding a post-quantum signature.
+	//
+	// Definition:
+	// transactions/pqsig.go : PQSig
+	Pqsig *TransactionSignaturePQsig `json:"pqsig,omitempty"`
+
 	// Signature \[sig\] ed25519 signature.
 	Signature *[]byte `json:"signature,omitempty"`
 }
@@ -1264,6 +1276,24 @@ type TransactionSignatureMultisigSubsignature struct {
 
 	// Signature \[s\]
 	Signature *[]byte `json:"signature,omitempty"`
+}
+
+// TransactionSignaturePQsig structure holding a post-quantum signature.
+//
+// Definition:
+// transactions/pqsig.go : PQSig
+type TransactionSignaturePQsig struct {
+	// PublicKey \[pk\]
+	PublicKey []byte `json:"public-key"`
+
+	// Salt \[slt\] a single byte, added to ensure the hashed address is not an Ed25519 curve point
+	Salt *uint64 `json:"salt,omitempty"`
+
+	// Scheme \[sch\] identifies the internal signature scheme.
+	Scheme string `json:"scheme"`
+
+	// Signature \[sig\]
+	Signature []byte `json:"signature"`
 }
 
 // TransactionStateProof Fields for a state proof transaction.

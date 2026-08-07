@@ -4,9 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -299,7 +300,7 @@ func setupLiveServerAndReturnShutdownFunc(t *testing.T, db *postgres.IndexerDb) 
 }
 
 func readFixture(t *testing.T, path string, seed *fixture) fixture {
-	fileBytes, err := ioutil.ReadFile(path + seed.File)
+	fileBytes, err := os.ReadFile(path + seed.File)
 	require.NoError(t, err)
 
 	saved := fixture{}
@@ -313,7 +314,7 @@ func writeFixture(t *testing.T, path string, save fixture) {
 	fileBytes, err := json.MarshalIndent(save, "", "  ")
 	require.NoError(t, err)
 
-	err = ioutil.WriteFile(path+save.File, fileBytes, 0644)
+	err = os.WriteFile(path+save.File, fileBytes, 0644)
 	require.NoError(t, err)
 }
 
@@ -339,7 +340,7 @@ func getRequest(t *testing.T, endpoint string, params []param) (path string, res
 	require.NoError(t, reqErr)
 	defer resp.Body.Close()
 
-	body, bodyErr = ioutil.ReadAll(resp.Body)
+	body, bodyErr = io.ReadAll(resp.Body)
 
 	if verbose {
 		fmt.Printf(`
